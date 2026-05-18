@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>USDT to OVO / GoPay</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body{
+      background:#020617;
+      font-family:sans-serif;
+    }
+
+    .card{
+      background:rgba(15,23,42,0.85);
+      border:1px solid rgba(255,255,255,0.08);
+      backdrop-filter:blur(10px);
+    }
+
+    .input{
+      width:100%;
+      padding:14px 16px;
+      border-radius:14px;
+      background:#0f172a;
+      border:1px solid #1e293b;
+      color:white;
+      transition:0.2s;
+    }
+
+    .input:focus{
+      outline:none;
+      border-color:#14b8a6;
+      box-shadow:0 0 0 3px rgba(20,184,166,0.15);
+    }
+
+    .label{
+      font-size:14px;
+      margin-bottom:8px;
+      display:block;
+      color:#cbd5e1;
+    }
+  </style>
+</head>
+
+<body class="text-white">
+
+  <div class="max-w-xl mx-auto px-4 py-8">
+
+    <!-- HEADER -->
+    <div class="text-center mb-8">
+
+      <h1 class="text-4xl font-bold leading-tight">
+        <span class="text-emerald-400">USDT</span>
+        to
+        <span class="text-cyan-400">OVO / GoPay</span>
+      </h1>
+
+      <p class="text-slate-400 mt-3">
+        Fast • Secure • Manual Transfer
+      </p>
+
+    </div>
+
+    <!-- RATE CARD -->
+    <div class="card rounded-3xl p-6 mb-6">
+
+      <div class="flex justify-between items-start gap-4">
+
+        <div>
+          <p class="text-slate-400 text-sm mb-2">
+            TODAY'S RATE
+          </p>
+
+          <h2 class="text-4xl font-bold text-emerald-400">
+            Rp <span id="rateText">16,200</span>
+          </h2>
+
+          <p class="text-slate-500 text-sm mt-2">
+            1 USDT
+          </p>
+        </div>
+
+        <div class="text-right">
+
+          <p class="text-slate-400 text-sm mb-2">
+            MAXIMUM PAYOUT
+          </p>
+
+          <h2 class="text-3xl font-bold text-cyan-400">
+            <span id="maxUsdt">123.45</span> USDT
+          </h2>
+
+          <p class="text-slate-500 text-sm mt-2">
+            Max IDR: Rp 2,000,000
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- FORM -->
+    <div class="card rounded-3xl p-6">
+
+      <!-- NAME -->
+      <div class="mb-5">
+        <label class="label">
+          Your Name
+        </label>
+
+        <input
+          type="text"
+          id="name"
+          class="input"
+          placeholder="Enter your full name"
+        >
+      </div>
+
+      <!-- USDT -->
+      <div class="mb-5">
+
+        <label class="label">
+          Amount in USDT
+        </label>
+
+        <input
+          type="number"
+          id="usdt"
+          class="input"
+          placeholder="Enter amount"
+          oninput="calculateIDR()"
+        >
+
+        <div class="mt-3 flex justify-between text-sm">
+
+          <p class="text-slate-400">
+            Estimated Payout
+          </p>
+
+          <p class="font-bold text-emerald-400">
+            Rp <span id="idrText">0</span>
+          </p>
+
+        </div>
+
+        <p class="text-red-400 text-sm mt-2 hidden" id="errorText">
+          Amount exceeds maximum payout limit.
+        </p>
+
+      </div>
+
+      <!-- PAYMENT -->
+      <div class="mb-5">
+
+        <label class="label">
+          Payment Method
+        </label>
+
+        <select
+          id="method"
+          class="input"
+        >
+          <option>OVO</option>
+          <option>GoPay</option>
+        </select>
+
+      </div>
+
+      <!-- NUMBER -->
+      <div class="mb-5">
+
+        <label class="label">
+          OVO / GoPay Number
+        </label>
+
+        <input
+          type="text"
+          id="number"
+          class="input"
+          placeholder="08xxxxxxxxxx"
+        >
+
+      </div>
+
+      <!-- ACCOUNT NAME -->
+      <div class="mb-6">
+
+        <label class="label">
+          Name on Account
+        </label>
+
+        <input
+          type="text"
+          id="accountName"
+          class="input"
+          placeholder="Registered account name"
+        >
+
+      </div>
+
+      <!-- BUTTON -->
+      <button
+        onclick="sendWhatsApp()"
+        class="w-full bg-emerald-500 hover:bg-emerald-400 transition-all duration-200 text-black font-bold py-4 rounded-2xl text-lg"
+      >
+        Submit via WhatsApp
+      </button>
+
+      <p class="text-center text-slate-500 text-sm mt-4">
+        We do not store any submitted data.
+      </p>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    // =========================
+    // CONFIG
+    // =========================
+
+    const RATE = 16200;
+
+    // MAXIMUM IDR
+    const MAX_IDR = 2000000;
+
+    // WHATSAPP NUMBER
+    const WHATSAPP = "628123456789";
+
+    // =========================
+    // AUTO MAX USDT
+    // =========================
+
+    const MAX_USDT = (MAX_IDR / RATE);
+
+    document.getElementById("maxUsdt")
+      .innerText = MAX_USDT.toFixed(2);
+
+    // =========================
+    // CALCULATE
+    // =========================
+
+    function calculateIDR(){
+
+      const input =
+        document.getElementById("usdt");
+
+      const error =
+        document.getElementById("errorText");
+
+      let usdt =
+        parseFloat(input.value) || 0;
+
+      // AUTO LIMIT
+      if(usdt > MAX_USDT){
+
+        usdt = MAX_USDT;
+
+        input.value = MAX_USDT.toFixed(2);
+
+        error.classList.remove("hidden");
+
+      }else{
+
+        error.classList.add("hidden");
+
+      }
+
+      const total = usdt * RATE;
+
+      document.getElementById("idrText")
+        .innerText = total.toLocaleString("id-ID");
+
+    }
+
+    // =========================
+    // SEND WA
+    // =========================
+
+    function sendWhatsApp(){
+
+      const name =
+        document.getElementById("name").value;
+
+      const usdt =
+        document.getElementById("usdt").value;
+
+      const method =
+        document.getElementById("method").value;
+
+      const number =
+        document.getElementById("number").value;
+
+      const accountName =
+        document.getElementById("accountName").value;
+
+      const total =
+        (parseFloat(usdt) * RATE);
+
+      const message =
+`Hello, I want to convert USDT.
+
+Name:
+${name}
+
+Amount:
+${usdt} USDT
+
+Estimated Payout:
+Rp ${total.toLocaleString("id-ID")}
+
+Payment Method:
+${method}
+
+Account Number:
+${number}
+
+Account Name:
+${accountName}`;
+
+      const url =
+`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;
+
+      window.open(url, "_blank");
+
+    }
+
+  </script>
+
+</body>
+</html>
